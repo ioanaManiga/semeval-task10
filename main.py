@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 
 import keras_nlp
 import keras
@@ -29,9 +30,6 @@ v = DictVectorizer(sparse=False)
 
 #############################################################################3
 
-# task3_train_attributes = task3_train_attributes[:100]
-# task3_train_classes = task3_train_classes[:100]
-# v.fit(task3_train_attributes)
 X_train = v.fit_transform(task3_train_attributes)
 support = SelectKBest(chi2, k=350).fit(X_train, task3_train_classes)
 
@@ -50,9 +48,6 @@ train_features = {
 
 ##########################################################################
 
-# task3_val_attributes = task3_val_attributes[:100]
-# task3_val_classes = task3_val_classes[:100]
-# v.fit(task3_val_attributes)
 X_test = v.fit_transform(task3_val_attributes)
 support = SelectKBest(chi2, k=350).fit(X_test, task3_val_classes)
 
@@ -64,18 +59,14 @@ padding_masking1 = X_test > 0
 
 padding_masking1 = padding_masking1.int()
 
-
 test_features = {
     "token_ids": X_test,
     "padding_mask": padding_masking1
 }
 
+
 ##########################################################################
 
-# preprocessor = keras_nlp.models.DistilBertPreprocessor.from_preset(
-#     "distil_bert_base_en_uncased",
-#     sequence_length=128,
-# )
 def recall_m(y_true, y_pred):
     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
@@ -99,7 +90,7 @@ def f1_m(y_true, y_pred):
 classifier = keras_nlp.models.DistilBertClassifier.from_preset(
     "distil_bert_base_en_uncased",
     preprocessor=None,
-    num_classes=2
+    num_classes=2,
 )
 
 classifier.compile(
@@ -116,13 +107,4 @@ print("Testing Accuracy: {:.4f}".format(accuracy))
 print("Testing F1: {:.4f}".format(f1_score))
 print("Testing Precision: {:.4f}".format(precision))
 print("Testing Recall: {:.4f}".format(recall))
-# loss, accuracy = classifier.evaluate(X_val, Y_val, verbose=False)
-# print("Testing Accuracy:  {:.4f}".format(accuracy))
 
-# print("PREDICTIONS",predictions)
-# print("recall",accuracy_score(y_test.astype(int), predictions))
-# # print("f1",f1_score(y_test.astype(int), predictions))
-# print("precision",precision_score(y_test.astype(int), predictions))
-# print("recall",recall_score(y_test.astype(int), predictions))
-#
-# print(y_test.astype(int))
